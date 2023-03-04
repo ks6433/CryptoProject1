@@ -1,6 +1,7 @@
 # Encryption algorithm based on pseudocode given in project statement
 # TODO
 #  we're going to request parameters by command line
+from scipy.stats import ks_2samp
 import random
 
 characterMap = {' ': 0, 'a': 1, 'c': 3, 'b': 2,
@@ -58,14 +59,63 @@ def generate_random_key(key_length):
         key += num_to_char(random.randint(0, 26))
     return key
 
-def decryption1()
+def comparator(a, b):
+    result = ks_2samp(a, b)
+    # print(result.pvalue)
+    if result.pvalue >= 0.05:
+        return True # the two distributions are significantly identical
+    else:
+        return False # the two distributions are not significantly identical
+
+
+def freq_distributor(ct):
+    distribution_list = [0 for i in range(len(characterMap))]
+    for i in ct:
+        distribution_list[characterMap[i]] += 1
+    return distribution_list
+
+def decryption(ct, pt_set):
+    our_guess = ""
+    max_freq_plaintext = 0
+    pt_index = 0
+    # iterate over all potential plaintexts
+    for pt in pt_set:
+        max_val = 0
+        print("Plaintext index:"+str(pt_index))
+        # for all possible key lenthgs
+        for t in range(1, 26):  # t=4 cafe
+            freq_match_count = 0
+            # for all the letters of the key
+            for j in range(0, t):  # j = 0,1,2,3   p= bbbbccccd
+                                                # k= cafecafec
+                                                 # c= fcrggxryzw
+                ct_str = ""  # build the cipher that is potentially encrypted with that letter
+                for i in range(j, len(ct), t):
+                    ct_str += ct[i]
+
+                pred_pt = ""  # and all the letters of the plaintext encrypted by tghe dame letter of the key
+                for i in range(j, len(pt), t):
+                    pred_pt += pt[i]
+                # compare that they match. I think here it will Fail because of the random vals
+                #freq_cipher=freq_distributor(ct_str)
+                #freq_pt= freq_distributor(pred_pt)
+                if comparator(list(ct_str),list(pred_pt)):
+                    freq_match_count += 1
+            max_val = max(max_val, freq_match_count)
+
+        print("max value: " + str(max_val))
+        if max_val > max_freq_plaintext:
+            max_freq_plaintext = max_val
+            #our_guess = pt
+            our_guess = pt_index
+
+        pt_index += 1
+    return our_guess
 
 
 if __name__ == '__main__':
-    p_random = 0.05  # can change this later
-
-
-    plaintext_set1=[]
+    # read the dictionary input file
+    plaintext_set1 = []
     # open the dictionary 1 text file
     with open('dict_1.txt', 'rb') as file:
         lines = [line.rstrip() for line in file]
@@ -78,18 +128,42 @@ if __name__ == '__main__':
             #print(p)
                 plaintext_set1.append(p)
 
-    # for plaintext in plaintext_set1:
-    #     print(plaintext)
-
-    # print(len(plaintext_set1))
-
     # For testing purposes, we generate a key of length t
-    t=7
+    p_random = 0.05  # can change this later
+    t=6
     key = generate_random_key(t)
     print(key)
 
     #TODO
     #generate multiple CTs per key and plaintext
 
-    result = encryption(plaintext_set1[0], key, p_random)
-    print(result)
+    cipher = encryption(plaintext_set1[0], key, p_random)
+    print(cipher)
+
+    our_guess_pt = decryption(cipher, plaintext_set1)
+    print("Our guess  plaintext is:", str(our_guess_pt))
+
+    # Index of coincidence in python:
+    """
+    def getIOC(text):
+	letterCounts = []
+    # we already did this part:
+	# Loop through each letter in the alphabet - count number of times it appears
+	for i in range(len(alph)):
+		count = 0
+		for j in text:
+			if j == alph[i]:
+				count += 1
+		letterCounts.append(count)
+    # ------------------- this would go inside of comparator function: 
+	# Loop through all letter counts, applying the calculation (the sigma part)
+	total = 0
+	for i in range(len(letterCounts)):
+		ni = letterCounts[i]
+		total += ni * (ni - 1)
+
+	N = countLetters(text)
+	c = 26.0 # Number of letters in the alphabet
+	total = float(total) / ((N * (N - 1)))
+	return total
+    """
