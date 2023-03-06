@@ -1,4 +1,4 @@
-# Encryption algorithm based on pseudocode given in project statement
+
 # TODO
 #  we're going to request parameters by command line
 from scipy.stats import ks_2samp
@@ -22,7 +22,7 @@ def num_to_char(val):
 # k=cafe  3 1  6  5
 # c=emaj  5 13 1 10
 
-# Encryption scheme
+# Encryption algorithm based on pseudocode given in project statement
 def encryption(plain_text, key, p_random):
     c_pointer = 0
     m_pointer = 0
@@ -49,7 +49,7 @@ def encryption(plain_text, key, p_random):
             random_char=num_to_char(random_num)
             cipher_text.append(random_char)
             num_rand_char += 1
-        c_pointer +=1
+        c_pointer += 1
 
     return cipher_text
 
@@ -78,22 +78,22 @@ def decryption(ct, pt_set):
     our_guess = ""
     max_freq_plaintext = 0
     pt_index = 0
-    # iterate over all potential plaintexts
+    # iterate over all potential plaintexts (there are 5 of them)
     for pt in pt_set:
         max_val = 0
-        print("Plaintext index:"+str(pt_index))
-        # for all possible key lenthgs
-        for t in range(1, 26):  # t=4 cafe
+        print("Plaintext index:" + str(pt_index))
+        # for all possible key lengths
+        for t in range(1, 26):  # if t=4 cafe
             freq_match_count = 0
             # for all the letters of the key
             for j in range(0, t):  # j = 0,1,2,3   p= bbbbccccd
-                                                # k= cafecafec
+                                                 # k= cafecafec
                                                  # c= fcrggxryzw
                 ct_str = ""  # build the cipher that is potentially encrypted with that letter
                 for i in range(j, len(ct), t):
                     ct_str += ct[i]
 
-                pred_pt = ""  # and all the letters of the plaintext encrypted by tghe dame letter of the key
+                pred_pt = ""  # and all the letters of the plaintext encrypted by the same letter of the key
                 for i in range(j, len(pt), t):
                     pred_pt += pt[i]
                 # compare that they match. I think here it will Fail because of the random vals
@@ -122,26 +122,27 @@ if __name__ == '__main__':
 
     for p in lines:
         #print(p)
-        p=str(p, 'UTF-8')
+        p = str(p, 'UTF-8')
         if not (p.find('Candidate') !=-1 or p.find('Test') !=-1): # check that line is not empty
             if p.strip():
-            #print(p)
+            # print(p)
                 plaintext_set1.append(p)
 
     # For testing purposes, we generate a key of length t
     p_random = 0.05  # can change this later
-    t=6
+    t = 6
     key = generate_random_key(t)
     print(key)
 
     #TODO
     #generate multiple CTs per key and plaintext
 
+    # for testing purposes, pass in only plaintext 0:
     cipher = encryption(plaintext_set1[0], key, p_random)
     print(cipher)
 
     our_guess_pt = decryption(cipher, plaintext_set1)
-    print("Our guess  plaintext is:", str(our_guess_pt))
+    print("Our plaintext guess is:", str(our_guess_pt))
 
     # Index of coincidence in python:
     """
